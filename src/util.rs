@@ -109,3 +109,21 @@ pub fn random_bytes(count: usize) -> Vec<u8> {
 
 	(0..count).map(|_| rng.gen::<u8>()).collect()
 }
+
+pub fn identify_ecb(ciphertext: &[u8], block_size: usize) -> bool {
+	let block_count = ciphertext.len() / block_size;
+	for block1 in 0..(block_count - 1) {
+		for block2 in (block1 + 1)..block_count {
+			let block1_start = block1 * block_size;
+			let block1_end = (block1 + 1) * block_size;
+			let block2_start = block2 * block_size;
+			let block2_end = (block2 + 1) * block_size;
+
+			if &ciphertext[block1_start..block1_end] == &ciphertext[block2_start..block2_end] {
+				return true;
+			}
+		}
+	}
+
+	false
+}
