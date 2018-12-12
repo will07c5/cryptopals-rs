@@ -1,6 +1,5 @@
 use rand;
 use rand::Rng;
-use std::fmt;
 use std::fmt::Write;
 
 use crate::ops;
@@ -138,9 +137,9 @@ pub fn print_hex(buf: &[u8]) {
 			let b = buf[cur + i];
 
 			if cur + i < buf.len() {
-				write!(&mut output, "{:2X} ", b);
+				write!(&mut output, "{:2X} ", b).unwrap();
 			} else {
-				write!(&mut output, "   ");
+				write!(&mut output, "   ").unwrap();
 			}
 		}
 
