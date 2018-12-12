@@ -5,6 +5,7 @@ extern crate crypto;
 use crypto::aessafe::AesSafe128Encryptor;
 use crypto::symmetriccipher::BlockEncryptor;
 use rand::Rng;
+use common::pkcs7::pkcs7_pad;
 
 const BLOCK_SIZE: usize = 16;
 
@@ -18,7 +19,7 @@ fn encryption_oracle(input: &[u8]) -> (Vec<u8>, bool) {
 	input_padded.extend_from_slice(input);
 	input_padded.append(&mut common::util::random_bytes(5 + rng.gen::<usize>() % 5));
 
-	let input_final = common::ops::pkcs7_pad(&input_padded, BLOCK_SIZE);
+	let input_final = pkcs7_pad(&input_padded, BLOCK_SIZE);
 	let encryptor = AesSafe128Encryptor::new(&key);
 	let mut ciphertext = Vec::new();
 	let cbc_mode;

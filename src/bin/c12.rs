@@ -5,6 +5,7 @@ extern crate base64;
 use crypto::aessafe::AesSafe128Encryptor;
 use crypto::symmetriccipher::BlockEncryptor;
 use std::u8;
+use common::pkcs7::pkcs7_pad;
 
 const BLOCK_SIZE: usize = 16;
 
@@ -17,7 +18,7 @@ fn encryption_oracle(chosen: &[u8], key: &[u8]) -> Vec<u8> {
 	input.extend_from_slice(chosen);
 	input.extend(super_secret_bytes.iter());
 
-	let input_final = common::ops::pkcs7_pad(&input, BLOCK_SIZE);
+	let input_final = pkcs7_pad(&input, BLOCK_SIZE);
 
 	assert_eq!(key.len(), BLOCK_SIZE);
 

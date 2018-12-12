@@ -1,6 +1,7 @@
 extern crate rand;
 
 pub mod ops;
+pub mod pkcs7;
 pub mod util;
 
 #[macro_export]

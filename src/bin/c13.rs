@@ -4,6 +4,7 @@ extern crate crypto;
 
 use crypto::aessafe::{AesSafe128Encryptor, AesSafe128Decryptor};
 use crypto::symmetriccipher::{BlockEncryptor, BlockDecryptor};
+use common::pkcs7::pkcs7_pad;
 //use percent_encoding::{percent_decode, utf8_percent_encode, DEFAULT_ENCODE_SET};
 
 const BLOCK_SIZE: usize = 16;
@@ -56,7 +57,7 @@ fn profile_for(user: &str, uid: usize) -> String {
 }
 
 fn encrypt_profile(profile: &str, key: &[u8]) -> Vec<u8> {
-	let input = common::ops::pkcs7_pad(profile.as_bytes(), BLOCK_SIZE);
+	let input = pkcs7_pad(profile.as_bytes(), BLOCK_SIZE);
 	let mut output = Vec::with_capacity(input.len());
 
 	let encryptor = AesSafe128Encryptor::new(key);
