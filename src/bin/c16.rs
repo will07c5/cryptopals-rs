@@ -2,14 +2,9 @@ extern crate common;
 extern crate percent_encoding;
 extern crate crypto;
 
-use crypto::aes::{cbc_encryptor, cbc_decryptor, KeySize};
-use crypto::blockmodes::NoPadding;
-use crypto::buffer::{RefReadBuffer, RefWriteBuffer, ReadBuffer, WriteBuffer};
+use common::crypto_helper::{encrypt_cbc, decrypt_cbc, BLOCK_SIZE};
 use percent_encoding::{utf8_percent_encode, DEFAULT_ENCODE_SET};
 use common::ops::xor;
-
-
-const BLOCK_SIZE: usize = 16;
 
 fn enc_userdata(userdata: &str) -> (Vec<u8>, Vec<u8>) {
     let userdata_quoted = utf8_percent_encode(userdata, DEFAULT_ENCODE_SET);
@@ -28,28 +23,15 @@ fn enc_userdata(userdata: &str) -> (Vec<u8>, Vec<u8>) {
     let key = common::util::random_bytes(BLOCK_SIZE);
     let iv = [0u8; BLOCK_SIZE];
 
-    let mut output = vec!(0u8; input_padded.len());
+    let blob = encrypt_cbc(&key, &iv, &input_padded);
 
-    let mut encryptor = cbc_encryptor(KeySize::KeySize128, &key, &iv, NoPadding);
-    let mut input_buf = RefReadBuffer::new(&input_padded);
-    let mut output_buf = RefWriteBuffer::new(&mut output);
-
-    encryptor.encrypt(&mut input_buf, &mut output_buf, true).unwrap();
-
-    (key, output_buf.take_read_buffer().take_remaining().to_vec())
+    (key, blob)
 }
 
 fn is_admin(key: &[u8], blob: &[u8]) -> bool {
     let iv = [0u8; BLOCK_SIZE];
 
-    let mut output = vec!(0u8; blob.len());
-    let mut decryptor = cbc_decryptor(KeySize::KeySize128, &key, &iv, NoPadding);
-    let mut input_buf = RefReadBuffer::new(&blob);
-    let mut output_buf = RefWriteBuffer::new(&mut output);
-
-    decryptor.decrypt(&mut input_buf, &mut output_buf, true).unwrap();
-
-    let pt_buf = output_buf.take_read_buffer().take_remaining().to_vec();
+    let pt_buf = decrypt_cbc(&key, &iv, &blob);
     println!("Plaintext decrypted");
     common::util::print_hex(&pt_buf);
 
