@@ -1,5 +1,7 @@
 use rand;
 use rand::Rng;
+use std::fmt;
+use std::fmt::Write;
 
 use crate::ops;
 
@@ -126,4 +128,46 @@ pub fn identify_ecb(ciphertext: &[u8], block_size: usize) -> bool {
 	}
 
 	false
+}
+
+pub fn print_hex(buf: &[u8]) {
+	let mut cur = 0;
+	let mut output = String::new();
+	while cur < buf.len() {
+		for i in 0..16 {
+			let b = buf[cur + i];
+
+			if cur + i < buf.len() {
+				write!(&mut output, "{:2X} ", b);
+			} else {
+				write!(&mut output, "   ");
+			}
+		}
+
+		for i in 0..16 {
+			let b = buf[cur + i];
+
+			if cur + i < buf.len() {
+				if b < 128 {
+					let c = b as char;
+
+					if c.is_ascii_control() {
+						output.push('.');
+					} else {
+						output.push(c);
+					}
+				} else {
+					output.push('.');
+				}
+			} else {
+				output.push(' ');
+			}
+		}
+
+		output.push('\n');
+
+		cur += 16;
+	}
+
+	print!("{}", output);
 }
