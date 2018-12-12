@@ -31,10 +31,7 @@ fn encryption_oracle(input: &[u8]) -> (Vec<u8>, bool) {
 		let mut prev_block = [0u8; BLOCK_SIZE];
 		prev_block[0..].copy_from_slice(&common::util::random_bytes(BLOCK_SIZE));
 
-		for block in 0..(input_final.len() / BLOCK_SIZE) {
-			let block_start = block * BLOCK_SIZE;
-			let block_end = (block + 1) * BLOCK_SIZE;
-			let input_block = &input_final[block_start..block_end];
+		for input_block in input_final.chunks(BLOCK_SIZE) {
 			let mut output = [0u8; BLOCK_SIZE];
 			let input_block_cbc = common::ops::xor(&prev_block, &input_block);
 
@@ -50,10 +47,7 @@ fn encryption_oracle(input: &[u8]) -> (Vec<u8>, bool) {
 		// ECB
 		println!("ECB");
 
-		for block in 0..(input_final.len() / BLOCK_SIZE) {
-			let block_start = block * BLOCK_SIZE;
-			let block_end = (block + 1) * BLOCK_SIZE;
-			let input_block = &input_final[block_start..block_end];
+		for input_block in input_final.chunks(BLOCK_SIZE) {
 			let mut output = [0u8; BLOCK_SIZE];
 
 			encryptor.encrypt_block(input_block, &mut output);
