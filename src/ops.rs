@@ -1,14 +1,6 @@
 
 pub fn xor(a: &[u8], b: &[u8]) -> Vec<u8> {
-	assert_eq!(a.len(), b.len());
-
-	let mut out = Vec::with_capacity(a.len());
-
-	for (ab, bb) in a.iter().zip(b.iter()) {
-		out.push(ab ^ bb);
-	}
-
-	out
+	a.iter().zip(b.iter()).map(|(ab, bb)| ab ^ bb).collect()
 }
 
 pub fn xor_1b(a: &[u8], b: u8) -> Vec<u8> {
@@ -16,15 +8,8 @@ pub fn xor_1b(a: &[u8], b: u8) -> Vec<u8> {
 }
 
 pub fn xor_rk(a: &[u8], b: &[u8]) -> Vec<u8> {
-	let mut out = Vec::with_capacity(a.len());
-
-	for (idx, ab) in a.iter().enumerate() {
-		let bb = b[idx % b.len()];
-
-		out.push(ab ^ bb);
-	}
-
-	out
+	a.iter().zip(b.iter().cycle()).map(|(ab, bb)| ab ^ bb
+		).collect()
 }
 
 pub fn hamming_dist(a: &[u8], b: &[u8]) -> Result<usize, ()> {
