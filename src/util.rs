@@ -148,9 +148,9 @@ pub fn print_hex(buf: &[u8]) {
 	let mut output = String::new();
 	while cur < buf.len() {
 		for i in 0..16 {
-			let b = buf[cur + i];
-
 			if cur + i < buf.len() {
+				let b = buf[cur + i];
+
 				write!(&mut output, "{:2X} ", b).unwrap();
 			} else {
 				write!(&mut output, "   ").unwrap();
@@ -158,9 +158,10 @@ pub fn print_hex(buf: &[u8]) {
 		}
 
 		for i in 0..16 {
-			let b = buf[cur + i];
 
 			if cur + i < buf.len() {
+				let b = buf[cur + i];
+
 				if b < 128 {
 					let c = b as char;
 
