@@ -18,6 +18,10 @@ fn pkcs7_validate_internal(a: &[u8], block_size: usize) -> Option<u8> {
 
     let pad_count = a[a.len() - 1] as usize;
 
+    if pad_count < 1 {
+        return None;
+    }
+
     if pad_count > block_size {
         return None;
     }
