@@ -1,5 +1,6 @@
 extern crate rand;
 extern crate crypto;
+extern crate byteorder;
 
 pub mod ops;
 pub mod pkcs7;
