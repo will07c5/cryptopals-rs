@@ -15,7 +15,7 @@ use crate::util::print_hex;
 pub const CHUNK_SIZE: usize = 64;
 pub const HASH_SIZE: usize = 20;
 
-fn sha1_digest_internal(h: &mut [u32; 5], chunk: &[u8]) {
+pub fn sha1_digest_chunk(h: &mut [u32; 5], chunk: &[u8]) {
 	assert_eq!(chunk.len(), CHUNK_SIZE);
 
 	let mut rdr = Cursor::new(chunk);
@@ -97,7 +97,6 @@ fn sha1_digest_internal(h: &mut [u32; 5], chunk: &[u8]) {
 
 }
 
-
 pub fn sha1_digest(data: &[u8]) -> Vec<u8> {
 	// Pre-processing:
 	// append the bit '1' to the message e.g. by adding 0x80 if message length is a multiple of 8 bits.
@@ -109,7 +108,7 @@ pub fn sha1_digest(data: &[u8]) -> Vec<u8> {
 	final_data.extend_from_slice(&data);	
 	final_data.push(0x80);
 
-	let padding = ((CHUNK_SIZE - final_data.len() % CHUNK_SIZE) - 8) % CHUNK_SIZE;
+	let padding = ((CHUNK_SIZE - final_data.len() % CHUNK_SIZE) + CHUNK_SIZE - 8) % CHUNK_SIZE;
 
 	final_data.extend_from_slice(&vec![0u8; padding]);
 	final_data.write_u64::<BigEndian>((data.len() * 8) as u64).unwrap();
@@ -125,7 +124,7 @@ pub fn sha1_digest(data: &[u8]) -> Vec<u8> {
 	// h4 = 0xC3D2E1F0
 	let mut h = [0x67452301, 0xEFCDAB89, 0x98BADCFE, 0x10325476, 0xC3D2E1F0];
 	for chunk in final_data.chunks(CHUNK_SIZE) {
-		sha1_digest_internal(&mut h, &chunk);
+		sha1_digest_chunk(&mut h, &chunk);
 	}
 
 	// Produce the final hash value (big-endian) as a 160-bit number:
