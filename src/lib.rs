@@ -1,12 +1,14 @@
 extern crate rand;
 extern crate crypto;
 extern crate byteorder;
+extern crate hex;
 
 pub mod ops;
 pub mod pkcs7;
 pub mod util;
 pub mod crypto_helper;
 pub mod mtrng;
+pub mod sha1;
 
 #[macro_export]
 macro_rules! challenge_data {
