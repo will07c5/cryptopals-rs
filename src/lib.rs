@@ -9,6 +9,7 @@ pub mod util;
 pub mod crypto_helper;
 pub mod mtrng;
 pub mod sha1;
+pub mod md4;
 
 #[macro_export]
 macro_rules! challenge_data {

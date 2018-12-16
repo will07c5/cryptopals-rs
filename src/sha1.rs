@@ -1,8 +1,7 @@
 // from pseudo code at https://en.wikipedia.org/wiki/SHA-1
 
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
-use std::io::{Read, Cursor};
-use crate::util::print_hex;
+use std::io::Cursor;
 
 // Note 1: All variables are unsigned 32-bit quantities and wrap modulo 232 when calculating, except for
 //         ml, the message length, which is a 64-bit quantity, and

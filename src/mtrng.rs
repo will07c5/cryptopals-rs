@@ -1,7 +1,7 @@
 const W: u32 = 32;
 pub const N: usize = 624;
 const M: usize = 397;
-const R: usize = 31;
+//const R: usize = 31;
 
 const A: u32 = 0x9908B0DF;
 
