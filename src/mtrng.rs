@@ -3,20 +3,20 @@ pub const N: usize = 624;
 const M: usize = 397;
 //const R: usize = 31;
 
-const A: u32 = 0x9908B0DF;
+const A: u32 = 0x9908_B0DF;
 
 const U: u32 = 11;
-const D: u32 = 0xFFFFFFFF;
+const D: u32 = 0xFFFF_FFFF;
 
 const S: u32 = 7;
-const B: u32 = 0x9D2C5680;
+const B: u32 = 0x9D2C_5680;
 
 const T: u32 = 15;
-const C: u32 = 0xEFC60000;
+const C: u32 = 0xEFC6_0000;
 
 const L: u32 = 18;
 
-const F: u32 = 1812433253;
+const F: u32 = 1_812_433_253;
 
 pub fn temper(x: u32) -> u32 {
     let y = x ^ ((x >> U) & D);
@@ -64,7 +64,7 @@ impl MTRNG {
     }
 
     pub fn gen(&mut self) -> u32 {
-        let mut next_x = (self.x[0] & 0xffff0000) | (self.x[1] & 0x0000ffff);
+        let mut next_x = (self.x[0] & 0xffff_0000) | (self.x[1] & 0x0000_ffff);
 
         if next_x & 1 == 0 {
             next_x >>= 1;
@@ -72,12 +72,12 @@ impl MTRNG {
             next_x = (next_x >> 1) ^ A
         }
 
-        next_x = self.x[M] ^ next_x;
+        next_x ^= self.x[M];
 
         self.x.rotate_left(1);
         self.x[self.x.len() - 1] = next_x;
 
-        return temper(next_x);
+        temper(next_x)
     }
 }
 

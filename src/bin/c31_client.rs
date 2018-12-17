@@ -15,7 +15,7 @@ fn time_request(client: &Client, test_hash: &str) -> u64 {
         .unwrap();
     let elapsed = start.elapsed();
 
-    elapsed.as_secs() * 1000000 + elapsed.subsec_micros() as u64 
+    elapsed.as_secs() * 1_000_000 + u64::from(elapsed.subsec_micros())
 }
 
 fn main() {

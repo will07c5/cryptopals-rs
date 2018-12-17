@@ -38,8 +38,8 @@ fn is_admin(key: &[u8], blob: &[u8]) -> Result<bool, Vec<u8>> {
         Err(_) => return Err(pt_buf),
     };
 
-    for tuple_str in pt.split(";") {
-        let tuple: Vec<&str> = tuple_str.split("=").collect();
+    for tuple_str in pt.split(';') {
+        let tuple: Vec<&str> = tuple_str.split('=').collect();
 
         assert_eq!(tuple.len(), 2);
 

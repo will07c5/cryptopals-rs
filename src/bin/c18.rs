@@ -1,7 +1,7 @@
 extern crate common;
 extern crate base64;
 
-use common::crypto_helper::{crypt_ctr, BLOCK_SIZE};
+use common::crypto_helper::crypt_ctr;
 
 const KEY: &[u8] = b"YELLOW SUBMARINE";
 const INPUT: &str = "L77na/nrFsKvynd6HzOoG7GHTLXsTVu9qvY/2syLXzhPweyyMTJULu/6/kXX0KSvoOLSFQ==";

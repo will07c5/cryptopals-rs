@@ -7,7 +7,6 @@ extern crate hex;
 use crypto::aessafe::AesSafe128Encryptor;
 use crypto::symmetriccipher::BlockEncryptor;
 use std::u8;
-use std::fmt;
 use rand::Rng;
 use std::collections::HashSet;
 use std::str::from_utf8;
@@ -53,18 +52,6 @@ fn encryption_oracle(chosen: &[u8], key: &[u8]) -> Vec<u8> {
 	}
 
 	output
-}
-
-fn print_ct(ct: &[u8]) {
-	let block_len = ct.len() / BLOCK_SIZE;
-
-	for block_idx in 0..block_len {
-		let block_start = block_idx * BLOCK_SIZE;
-
-		print!("{}", hex::encode(&ct[block_start..block_start+BLOCK_SIZE]));
-	}
-
-	println!("");
 }
 
 fn find_block_size(key: &[u8]) -> Option<usize> {
@@ -165,7 +152,7 @@ fn find_block_after(ct: &[u8], target: &[u8], block_size: usize) -> Option<Vec<u
 fn crack_byte(
 	key: &[u8],
 	block_size: usize,
-	block_variants: &Vec<HashSet<Vec<u8>>>,
+	block_variants: &[HashSet<Vec<u8>>],
 	marker_ct: &[u8],
 	cracked_pt: &[u8]) -> Option<u8> {
 
@@ -224,7 +211,7 @@ fn crack_byte(
 fn do_crack(
 	key: &[u8],
 	block_size: usize,
-	block_variants: &Vec<HashSet<Vec<u8>>>,
+	block_variants: &[HashSet<Vec<u8>>],
 	marker_ct: &[u8]) -> Vec<u8> {
 	let pt_len = block_variants.iter().fold(0, |a, x| a + x.len()) - block_size;
 

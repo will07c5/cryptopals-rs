@@ -17,8 +17,8 @@ fn create(msg: &[u8]) -> (Vec<u8>, Vec<u8>) {
 	let sha = auth_internal(&key, &msg);
 
 	let mut out = Vec::new();
-	out.write(&sha).unwrap();
-	out.write(&msg).unwrap();
+	out.write_all(&sha).unwrap();
+	out.write_all(&msg).unwrap();
 
 	(key, out)
 }

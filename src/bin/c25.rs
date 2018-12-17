@@ -4,7 +4,6 @@ extern crate base64;
 
 use common::crypto_helper::{decrypt_ecb, crypt_ctr, BLOCK_SIZE};
 use common::ops::xor;
-use common::util::print_hex;
 
 const PLAINTEXT: &str = challenge_data!("25.txt");
 const KEY: &[u8] = b"YELLOW SUBMARINE";
@@ -28,9 +27,7 @@ fn edit(key: &[u8], ct: &[u8], offset: usize, new_data: &[u8]) -> Vec<u8> {
 		*a = *b;
 	}
 
-	let new_ct = crypt_ctr(&key, 0, &pt);
-
-	new_ct
+	crypt_ctr(&key, 0, &pt)
 }
 
 fn main() {

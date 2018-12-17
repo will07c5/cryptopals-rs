@@ -2,15 +2,14 @@ extern crate common;
 extern crate rand;
 
 use common::mtrng::MTRNG;
-use std::time::{SystemTime, UNIX_EPOCH};
 use rand::Rng;
 
 const KNOWN: &[u8] = b"AAAAAAAAAAAAAA";
 
 fn crypt_mtrng(seed: u16, input: &[u8]) -> Vec<u8> {
-    let mut rng = MTRNG::new(seed as u32);
+    let mut rng = MTRNG::new(u32::from(seed));
 
-    input.into_iter().map(|x| rng.gen() as u8 ^ x).collect()
+    input.iter().map(|x| rng.gen() as u8 ^ x).collect()
 }
 
 fn main() {

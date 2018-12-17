@@ -37,10 +37,8 @@ fn main() {
 			blocks.push(Vec::new());
 		}
 
-		let mut idx = 0;
-		for b in input_bytes.iter() {
-			blocks[idx % size].push(*b);
-			idx += 1;
+		for (i, b) in input_bytes.iter().enumerate() {
+			blocks[i % size].push(*b);
 		}
 
 		let mut key = Vec::new();

@@ -45,7 +45,7 @@ fn main() {
 	let mut input = Vec::new();
 	let mut current_len = None;
 	let mut block_size = 0;
-	for count in 1..65 {
+	for _ in 1..65 {
 		input.push(b'A');
 
 		let output = encryption_oracle(&input, &key);
@@ -65,7 +65,7 @@ fn main() {
 	assert_eq!(&output[0..block_size], &output[block_size..(block_size*2)]);
 	
 	let mut plaintext = vec![b'A'; block_size - 1];
-	for (pos, byte) in (0..(output.len() - block_size*2)).enumerate() {
+	for pos in 0..(output.len() - block_size*2) {
 		let mut found_byte = None;
 
 		{
@@ -90,8 +90,8 @@ fn main() {
 			//	println!("Testing {:?} {:?}", &check_cipher[(current_block*block_size)..((current_block+1)*block_size)],
 			//		&target_cipher[(current_block*block_size)..((current_block+1)*block_size)]);
 
-				if &check_cipher[0..block_size] ==
-					&target_cipher[(current_block*block_size)..((current_block+1)*block_size)] {
+				if check_cipher[0..block_size] ==
+					target_cipher[(current_block*block_size)..((current_block+1)*block_size)] {
 					found_byte = Some(test);
 					println!("{:?}", found_byte);
 					break;

@@ -22,8 +22,9 @@ fn encryption_oracle(input: &[u8]) -> (Vec<u8>, bool) {
 	let input_final = pkcs7_pad(&input_padded, BLOCK_SIZE);
 	let encryptor = AesSafe128Encryptor::new(&key);
 	let mut ciphertext = Vec::new();
-	let cbc_mode;
-	if rng.gen() {
+	let cbc_mode = rng.gen();
+
+	if cbc_mode {
 		// CBC
 		println!("CBC");
 
@@ -41,8 +42,6 @@ fn encryption_oracle(input: &[u8]) -> (Vec<u8>, bool) {
 			ciphertext.extend_from_slice(&output);
 
 		}
-
-		cbc_mode = true;
 	} else {
 		// ECB
 		println!("ECB");
@@ -54,8 +53,6 @@ fn encryption_oracle(input: &[u8]) -> (Vec<u8>, bool) {
 
 			ciphertext.extend_from_slice(&output);
 		}
-
-		cbc_mode = false;
 	}
 
 	(ciphertext, cbc_mode)

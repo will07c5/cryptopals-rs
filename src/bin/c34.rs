@@ -110,7 +110,7 @@ fn mitm(tx_a: Sender<Msg>, tx_b: Sender<Msg>, rx_a: Receiver<Msg>, rx_b: Receive
 
     loop {
         match rx_a.recv().unwrap() {
-            Msg::InitA { p, g, a_pub: _ } => {
+            Msg::InitA { p, g, .. } => {
                 tx_b.send(Msg::InitA { p: p.clone(), g, a_pub: p.clone() }).unwrap();
                 remote_p = Some(p);
             },
@@ -120,13 +120,13 @@ fn mitm(tx_a: Sender<Msg>, tx_b: Sender<Msg>, rx_a: Receiver<Msg>, rx_b: Receive
                 println!("MITM A->B decrypt:");
                 print_hex(&pt);
 
-                tx_b.send(Msg::Echo { iv, msg });
+                tx_b.send(Msg::Echo { iv, msg }).unwrap();
             },
             _ => panic!("Unexpected message at node B"),
         }
 
         match rx_b.recv().unwrap() {
-            Msg::InitB { b_pub: _ } => {
+            Msg::InitB { .. } => {
                 tx_a.send(Msg::InitB { b_pub: remote_p.as_ref().unwrap().clone() }).unwrap();
             },
             Msg::Echo { iv, msg } => {
@@ -135,7 +135,7 @@ fn mitm(tx_a: Sender<Msg>, tx_b: Sender<Msg>, rx_a: Receiver<Msg>, rx_b: Receive
                 println!("MITM B->A decrypt:");
                 print_hex(&pt);
 
-                tx_a.send(Msg::Echo { iv, msg });
+                tx_a.send(Msg::Echo { iv, msg }).unwrap();
 
                 break;
             },

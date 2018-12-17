@@ -24,8 +24,8 @@ pub fn sha1_digest_chunk(h: &mut [u32; 5], chunk: &[u8]) {
 	// break message into 512-bit chunks
 	// for each chunk
 	//     break chunk into sixteen 32-bit big-endian words w[i], 0 ≤ i ≤ 15
-	for i in 0..16 {
-		w[i] = rdr.read_u32::<BigEndian>().unwrap();
+	for wi in w.iter_mut().take(16) {
+		*wi = rdr.read_u32::<BigEndian>().unwrap();
 	}
 
 	//     Extend the sixteen 32-bit words into eighty 32-bit words:
@@ -46,7 +46,7 @@ pub fn sha1_digest_chunk(h: &mut [u32; 5], chunk: &[u8]) {
 	//     Main loop:[3][55]
 	//     for i from 0 to 79
 	
-	for i in 0..80 {
+	for (i, wi) in w.iter().enumerate() {
 		//         if 0 ≤ i ≤ 19 then
 		//             f = (b and c) or ((not b) and d)
 		//             k = 0x5A827999
@@ -74,7 +74,7 @@ pub fn sha1_digest_chunk(h: &mut [u32; 5], chunk: &[u8]) {
 		//         b = a
 		//         a = temp
 
-		let tmp = new_h[0].rotate_left(5).wrapping_add(f).wrapping_add(new_h[4]).wrapping_add(k).wrapping_add(w[i]);
+		let tmp = new_h[0].rotate_left(5).wrapping_add(f).wrapping_add(new_h[4]).wrapping_add(k).wrapping_add(*wi);
 		new_h[4] = new_h[3];
 		new_h[3] = new_h[2];
 		new_h[2] = new_h[1].rotate_left(30);
@@ -121,7 +121,7 @@ pub fn sha1_digest(data: &[u8]) -> Vec<u8> {
 	// h2 = 0x98BADCFE
 	// h3 = 0x10325476
 	// h4 = 0xC3D2E1F0
-	let mut h = [0x67452301, 0xEFCDAB89, 0x98BADCFE, 0x10325476, 0xC3D2E1F0];
+	let mut h = [0x6745_2301, 0xEFCD_AB89, 0x98BA_DCFE, 0x1032_5476, 0xC3D2_E1F0];
 	for chunk in final_data.chunks(CHUNK_SIZE) {
 		sha1_digest_chunk(&mut h, &chunk);
 	}

@@ -38,10 +38,7 @@ fn pkcs7_validate_internal(a: &[u8], block_size: usize) -> Option<u8> {
 }
 
 pub fn pkcs7_validate(a: &[u8], block_size: usize) -> bool {
-    match pkcs7_validate_internal(a, block_size) {
-        Some(_) => true,
-        None => false,
-    }
+    pkcs7_validate_internal(a, block_size).is_some()
 }
 
 pub fn pkcs7_strip(a: &[u8], block_size: usize) -> Option<Vec<u8>> {

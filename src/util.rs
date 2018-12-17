@@ -76,7 +76,7 @@ pub fn score_ascii_bytes(data: &[u8]) -> usize{
 		// b')' => score += 10.0,
 
 		// anything over 128 is pretty obviously bogus
-		128..=255 => score += 100000.0,
+		128..=255 => score += 100_000.0,
 
 		_ => (),
 		}
@@ -112,7 +112,7 @@ pub fn crack_1b_xor(ciphertext: &[u8]) -> Option<Crack1BResult> {
 
 	scores.sort_by_key(|k| { k.score });
 
-	if scores.len() > 0 {
+	if !scores.is_empty() {
 		Some(scores[0].clone())
 	} else {
 		None
@@ -134,7 +134,7 @@ pub fn identify_ecb(ciphertext: &[u8], block_size: usize) -> bool {
 			let block2_start = block2 * block_size;
 			let block2_end = (block2 + 1) * block_size;
 
-			if &ciphertext[block1_start..block1_end] == &ciphertext[block2_start..block2_end] {
+			if ciphertext[block1_start..block1_end] == ciphertext[block2_start..block2_end] {
 				return true;
 			}
 		}

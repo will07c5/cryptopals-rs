@@ -11,7 +11,6 @@ fn main() {
 
 	'outer: for (line_num, line) in input.lines().enumerate() {
 		let bytes = hex::decode(line).unwrap();
-		let block_count = bytes.len() / BLOCK_SIZE;
 		assert_eq!(bytes.len() % BLOCK_SIZE, 0);
 
 		for (chunk_idx, block1) in bytes.chunks(BLOCK_SIZE).enumerate() {

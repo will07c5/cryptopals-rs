@@ -46,7 +46,7 @@ pub fn md4_digest_chunk(abcd_in: &mut [u32; 4], chunk: &[u8]) {
         *xi = rdr.read_u32::<LittleEndian>().unwrap();
     }
 
-    let mut abcd = abcd_in.clone();
+    let mut abcd = *abcd_in;
 
     // Round 1
     for i in (0..16).step_by(4) {

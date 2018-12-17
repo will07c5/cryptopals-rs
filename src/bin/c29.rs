@@ -24,8 +24,8 @@ fn create(msg: &[u8]) -> (Vec<u8>, Vec<u8>) {
     let sha = auth_internal(&key, &msg);
 
     let mut out = Vec::new();
-    out.write(&sha).unwrap();
-    out.write(&msg).unwrap();
+    out.write_all(&sha).unwrap();
+    out.write_all(&msg).unwrap();
 
     (key, out)
 }
@@ -61,8 +61,8 @@ fn main() {
     let hash = &orig_auth_msg[..HASH_SIZE];
     let mut hash_cursor = Cursor::new(hash);
     let mut h = [0u32; 5];
-    for i in 0..5 {
-        h[i] = hash_cursor.read_u32::<BigEndian>().unwrap();
+    for val in &mut h {
+        *val = hash_cursor.read_u32::<BigEndian>().unwrap();
     }
 
     // add padding and length to the modified message
