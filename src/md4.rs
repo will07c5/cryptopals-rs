@@ -6,7 +6,9 @@ pub const HASH_SIZE: usize = 16;
 
 // Implemented based on the RFC (https://tools.ietf.org/html/rfc1320)
 
-pub fn md4_digest_chunk(a_in: &mut u32, b_in: &mut u32, c_in: &mut u32, d_in: &mut u32, chunk: &[u8]) {
+// NOTE: hasn't really been verified for correctness
+
+pub fn md4_digest_chunk(abcd_in: &mut [u32; 4], chunk: &[u8]) {
     assert_eq!(chunk.len(), CHUNK_SIZE);
 
     fn f(x: u32, y: u32, z: u32) -> u32 {
@@ -21,85 +23,49 @@ pub fn md4_digest_chunk(a_in: &mut u32, b_in: &mut u32, c_in: &mut u32, d_in: &m
         x ^ y ^ z
     }
 
-    let mut rdr = Cursor::new(chunk);
+    fn op(
+        func: fn (u32, u32, u32) -> u32,
+        abcd: &mut [u32; 4],
+        add_val: &[u32; 4],
+        constant: u32,
+        rot_val: &[u32; 4]) {
+        for (av, rv) in add_val.iter().zip(rot_val.iter()) {
+            abcd[0] = abcd[0].wrapping_add(func(abcd[1], abcd[2], abcd[3]))
+                .wrapping_add(*av)
+                .wrapping_add(constant)
+                .rotate_left(*rv);
+
+            abcd.rotate_right(1);
+        }
+    }
+
     let mut x = [0u32; 16];
 
+    let mut rdr = Cursor::new(chunk);
     for xi in x.iter_mut() {
         *xi = rdr.read_u32::<LittleEndian>().unwrap();
     }
 
-    let mut a = *a_in;
-    let mut b = *b_in;
-    let mut c = *c_in;
-    let mut d = *d_in;
+    let mut abcd = abcd_in.clone();
 
     // Round 1
-    a = a.wrapping_add(f(b, c, d)).wrapping_add(x[0]).rotate_left(3);
-    d = d.wrapping_add(f(a, b, c)).wrapping_add(x[1]).rotate_left(7);
-    c = c.wrapping_add(f(d, a, b)).wrapping_add(x[2]).rotate_left(11);
-    b = b.wrapping_add(f(c, d, a)).wrapping_add(x[3]).rotate_left(19);
-
-    a = a.wrapping_add(f(b, c, d)).wrapping_add(x[4]).rotate_left(3);
-    d = d.wrapping_add(f(a, b, c)).wrapping_add(x[5]).rotate_left(7);
-    c = c.wrapping_add(f(d, a, b)).wrapping_add(x[6]).rotate_left(11);
-    b = b.wrapping_add(f(c, d, a)).wrapping_add(x[7]).rotate_left(19);
-
-    a = a.wrapping_add(f(b, c, d)).wrapping_add(x[8]).rotate_left(3);
-    d = d.wrapping_add(f(a, b, c)).wrapping_add(x[9]).rotate_left(7);
-    c = c.wrapping_add(f(d, a, b)).wrapping_add(x[10]).rotate_left(11);
-    b = b.wrapping_add(f(c, d, a)).wrapping_add(x[11]).rotate_left(19);
-
-    a = a.wrapping_add(f(b, c, d)).wrapping_add(x[12]).rotate_left(3);
-    d = d.wrapping_add(f(a, b, c)).wrapping_add(x[13]).rotate_left(7);
-    c = c.wrapping_add(f(d, a, b)).wrapping_add(x[14]).rotate_left(11);
-    b = b.wrapping_add(f(c, d, a)).wrapping_add(x[15]).rotate_left(19);
+    for i in (0..16).step_by(4) {
+        op(f, &mut abcd, &[x[i], x[i + 1], x[i + 2], x[i + 3]], 0, &[3, 7, 11, 19]);
+    }
 
     // round 2
-    a = a.wrapping_add(g(b, c, d)).wrapping_add(x[0]).wrapping_add(0x5a827999).rotate_left(3);
-    d = d.wrapping_add(g(a, b, c)).wrapping_add(x[4]).wrapping_add(0x5a827999).rotate_left(5);
-    c = c.wrapping_add(g(d, a, b)).wrapping_add(x[8]).wrapping_add(0x5a827999).rotate_left(9);
-    b = b.wrapping_add(g(c, d, a)).wrapping_add(x[12]).wrapping_add(0x5a827999).rotate_left(13);
-
-    a = a.wrapping_add(g(b, c, d)).wrapping_add(x[1]).wrapping_add(0x5a827999).rotate_left(3);
-    d = d.wrapping_add(g(a, b, c)).wrapping_add(x[5]).wrapping_add(0x5a827999).rotate_left(5);
-    c = c.wrapping_add(g(d, a, b)).wrapping_add(x[9]).wrapping_add(0x5a827999).rotate_left(9);
-    b = b.wrapping_add(g(c, d, a)).wrapping_add(x[13]).wrapping_add(0x5a827999).rotate_left(13);
-
-    a = a.wrapping_add(g(b, c, d)).wrapping_add(x[2]).wrapping_add(0x5a827999).rotate_left(3);
-    d = d.wrapping_add(g(a, b, c)).wrapping_add(x[6]).wrapping_add(0x5a827999).rotate_left(5);
-    c = c.wrapping_add(g(d, a, b)).wrapping_add(x[10]).wrapping_add(0x5a827999).rotate_left(9);
-    b = b.wrapping_add(g(c, d, a)).wrapping_add(x[14]).wrapping_add(0x5a827999).rotate_left(13);
-
-    a = a.wrapping_add(g(b, c, d)).wrapping_add(x[3]).wrapping_add(0x5a827999).rotate_left(3);
-    d = d.wrapping_add(g(a, b, c)).wrapping_add(x[7]).wrapping_add(0x5a827999).rotate_left(5);
-    c = c.wrapping_add(g(d, a, b)).wrapping_add(x[11]).wrapping_add(0x5a827999).rotate_left(9);
-    b = b.wrapping_add(g(c, d, a)).wrapping_add(x[15]).wrapping_add(0x5a827999).rotate_left(13);
+    for i in (0..16).step_by(4) {
+        op(g, &mut abcd, &[x[i], x[i + 1], x[i + 2], x[i + 3]], 0x5a82_7999, &[3, 5, 9, 13]);
+    }
 
     // round 3
-    a = a.wrapping_add(h(b, c, d)).wrapping_add(x[0]).wrapping_add(0x6ed9eba1).rotate_left(3);
-    d = d.wrapping_add(h(a, b, c)).wrapping_add(x[8]).wrapping_add(0x6ed9eba1).rotate_left(9);
-    c = c.wrapping_add(h(d, a, b)).wrapping_add(x[4]).wrapping_add(0x6ed9eba1).rotate_left(11);
-    b = b.wrapping_add(h(c, d, a)).wrapping_add(x[12]).wrapping_add(0x6ed9eba1).rotate_left(15);
+    for i in (0..16).step_by(4) {
+        op(h, &mut abcd, &[x[i], x[i + 1], x[i + 2], x[i + 3]], 0x6ed9_eba1, &[3, 9, 11, 15]);
+    }
 
-    a = a.wrapping_add(h(b, c, d)).wrapping_add(x[2]).wrapping_add(0x6ed9eba1).rotate_left(3);
-    d = d.wrapping_add(h(a, b, c)).wrapping_add(x[10]).wrapping_add(0x6ed9eba1).rotate_left(9);
-    c = c.wrapping_add(h(d, a, b)).wrapping_add(x[6]).wrapping_add(0x6ed9eba1).rotate_left(11);
-    b = b.wrapping_add(h(c, d, a)).wrapping_add(x[14]).wrapping_add(0x6ed9eba1).rotate_left(15);
-
-    a = a.wrapping_add(h(b, c, d)).wrapping_add(x[1]).wrapping_add(0x6ed9eba1).rotate_left(3);
-    d = d.wrapping_add(h(a, b, c)).wrapping_add(x[9]).wrapping_add(0x6ed9eba1).rotate_left(9);
-    c = c.wrapping_add(h(d, a, b)).wrapping_add(x[5]).wrapping_add(0x6ed9eba1).rotate_left(11);
-    b = b.wrapping_add(h(c, d, a)).wrapping_add(x[13]).wrapping_add(0x6ed9eba1).rotate_left(15);
-
-    a = a.wrapping_add(h(b, c, d)).wrapping_add(x[3]).wrapping_add(0x6ed9eba1).rotate_left(3);
-    d = d.wrapping_add(h(a, b, c)).wrapping_add(x[11]).wrapping_add(0x6ed9eba1).rotate_left(9);
-    c = c.wrapping_add(h(d, a, b)).wrapping_add(x[7]).wrapping_add(0x6ed9eba1).rotate_left(11);
-    b = b.wrapping_add(h(c, d, a)).wrapping_add(x[15]).wrapping_add(0x6ed9eba1).rotate_left(15);
-
-    *a_in = (*a_in).wrapping_add(a);
-    *b_in = (*b_in).wrapping_add(b);
-    *c_in = (*c_in).wrapping_add(c);
-    *d_in = (*d_in).wrapping_add(d);
+    for (val_in, val) in abcd_in.iter_mut().zip(abcd.iter()) {
+        *val_in = (*val_in).wrapping_add(*val);
+    }
 }
 
 pub fn md4_digest(data: &[u8]) -> Vec<u8> {
@@ -114,35 +80,17 @@ pub fn md4_digest(data: &[u8]) -> Vec<u8> {
 
     assert_eq!(final_data.len() % CHUNK_SIZE, 0);
 
-    let mut a = 0x67452301;
-    let mut b = 0xefcdab89;
-    let mut c = 0x98badcfe;
-    let mut d = 0x10325476;
+    let mut abcd = [0x6745_2301, 0xefcd_ab89, 0x98ba_dcfe, 0x1032_5476];
 
     for chunk in final_data.chunks(CHUNK_SIZE) {
-        md4_digest_chunk(&mut a, &mut b, &mut c, &mut d, &chunk);
+        md4_digest_chunk(&mut abcd, &chunk);
     }
 
     let mut final_hash = Vec::new();
 
-    final_hash.write_u32::<LittleEndian>(a).unwrap();
-    final_hash.write_u32::<LittleEndian>(b).unwrap();
-    final_hash.write_u32::<LittleEndian>(c).unwrap();
-    final_hash.write_u32::<LittleEndian>(d).unwrap();
+    for val in abcd.iter() {
+        final_hash.write_u32::<LittleEndian>(*val).unwrap();
+    }
 
     final_hash
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn test_sha1_digest() {
-        let input = b"this is some text";
-        let expected = "0393694d16b84deb612e47ce6252bd35f0d86c06";
-
-        let digest = super::sha1_digest(input);
-        let digest_hex = hex::encode(&digest);
-
-        assert_eq!(digest_hex, expected);
-    }
 }

@@ -1,11 +1,11 @@
 extern crate common;
 extern crate rand;
-extern crate num_bigint;
+extern crate ramp;
 
 use rand::Rng;
-use num_bigint::{ToBigUint, RandBigInt, BigUint};
+use ramp::int::{Int, RandomInt};
 
-const P: &[u8] = b"ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024\
+const P: &str = "ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024\
 e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd\
 3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec\
 6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f\
@@ -25,35 +25,34 @@ fn main() {
 
         let a_priv = rng.gen_range::<u32>(0, p as u32);
         let a_pub = g.pow(a_priv) % p;
-        println!("a pub/priv {}/{}", a_pub, a_priv);
+        println!("a pub {} a priv {}", a_pub, a_priv);
 
         let b_priv = rng.gen_range::<u32>(0, p as u32);
         let b_pub = g.pow(b_priv) % p;
-        println!("b pub/priv {}/{}", b_pub, b_priv);
+        println!("b pub {} b priv {}", b_pub, b_priv);
 
         let s_a = b_pub.pow(a_priv) % p;
         let s_b = a_pub.pow(b_priv) % p;
-        println!("s a/b {}/{}", s_a, s_b);
+        println!("s a {} s b {}", s_a, s_b);
 
         assert_eq!(s_a, s_b);
     }
 
     {
-        let p = BigUint::parse_bytes(&P, 16).unwrap();
-        let g = G.to_biguint().unwrap();
-        let zero = 0.to_biguint().unwrap();
+        let p = Int::from_str_radix(&P, 16).unwrap();
+        let g = Int::from(G);
 
-        let a_priv = rng.gen_biguint_range(&zero, &p);
-        let a_pub = g.modpow(&a_priv, &p);
-        println!("a pub/priv {}/{}", a_pub, a_priv);
+        let a_priv = rng.gen_uint_below(&p);
+        let a_pub = g.pow_mod(&a_priv, &p);
+        println!("a pub {} a priv {}", a_pub, a_priv);
 
-        let b_priv = rng.gen_biguint_range(&zero, &p);
-        let b_pub = g.modpow(&b_priv, &p);
-        println!("b pub/priv {}/{}", b_pub, b_priv);
+        let b_priv = rng.gen_uint_below(&p);
+        let b_pub = g.pow_mod(&b_priv, &p);
+        println!("b pub {} b priv {}", b_pub, b_priv);
 
-        let s_a = b_pub.modpow(&a_priv, &p);
-        let s_b = a_pub.modpow(&b_priv, &p);
-        println!("s a/b {}/{}", s_a, s_b);
+        let s_a = b_pub.pow_mod(&a_priv, &p);
+        let s_b = a_pub.pow_mod(&b_priv, &p);
+        println!("s a {} s b {}", s_a, s_b);
 
         assert_eq!(s_a, s_b);
     }

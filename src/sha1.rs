@@ -60,10 +60,10 @@ pub fn sha1_digest_chunk(h: &mut [u32; 5], chunk: &[u8]) {
 		//             f = b xor c xor d
 		//             k = 0xCA62C1D6
 		let (f, k) = match i {
-			0...19 => ((new_h[1] & new_h[2]) | ((!new_h[1]) & new_h[3]), 0x5A827999),
-			20...39 => ((new_h[1] ^ new_h[2] ^ new_h[3]), 0x6ED9EBA1),
-			40...59 => ((new_h[1] & new_h[2]) | (new_h[1] & new_h[3]) | (new_h[2] & new_h[3]), 0x8F1BBCDC),
-			60...79 => (new_h[1] ^ new_h[2] ^ new_h[3], 0xCA62C1D6),
+			0...19 => ((new_h[1] & new_h[2]) | ((!new_h[1]) & new_h[3]), 0x5A82_7999),
+			20...39 => ((new_h[1] ^ new_h[2] ^ new_h[3]), 0x6ED9_EBA1),
+			40...59 => ((new_h[1] & new_h[2]) | (new_h[1] & new_h[3]) | (new_h[2] & new_h[3]), 0x8F1B_BCDC),
+			60...79 => (new_h[1] ^ new_h[2] ^ new_h[3], 0xCA62_C1D6),
 			_ => panic!("impossible"),
 		};
 

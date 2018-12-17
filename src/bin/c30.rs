@@ -27,8 +27,8 @@ fn create(msg: &[u8]) -> (Vec<u8>, Vec<u8>) {
     let sha = auth_internal(&key, &msg);
 
     let mut out = Vec::new();
-    out.write(&sha).unwrap();
-    out.write(&msg).unwrap();
+    out.write_all(&sha).unwrap();
+    out.write_all(&msg).unwrap();
 
     (key, out)
 }
@@ -63,10 +63,10 @@ fn main() {
 
     let hash = &orig_auth_msg[..HASH_SIZE];
     let mut hash_cursor = Cursor::new(hash);
-    let mut a = hash_cursor.read_u32::<LittleEndian>().unwrap();
-    let mut b = hash_cursor.read_u32::<LittleEndian>().unwrap();
-    let mut c = hash_cursor.read_u32::<LittleEndian>().unwrap();
-    let mut d = hash_cursor.read_u32::<LittleEndian>().unwrap();
+    let mut abcd = [0u32; 4];
+    for val in abcd.iter_mut() {
+        *val = hash_cursor.read_u32::<LittleEndian>().unwrap();
+    }
 
     // add padding and length to the modified message
     let orig_msg = &orig_auth_msg[HASH_SIZE..];
@@ -83,14 +83,13 @@ fn main() {
     print_hex(&evil_msg);
 
     // Hash new evil message
-    md4_digest_chunk(&mut a, &mut b, &mut c, &mut d, &evil_msg);
+    md4_digest_chunk(&mut abcd, &evil_msg);
 
     // Prepend the hash
     let mut evil_auth_msg = Vec::new();
-    evil_auth_msg.write_u32::<LittleEndian>(a).unwrap();
-    evil_auth_msg.write_u32::<LittleEndian>(b).unwrap();
-    evil_auth_msg.write_u32::<LittleEndian>(c).unwrap();
-    evil_auth_msg.write_u32::<LittleEndian>(d).unwrap();
+    for val in abcd.iter() {
+        evil_auth_msg.write_u32::<LittleEndian>(*val).unwrap();
+    }
     evil_auth_msg.extend_from_slice(&orig_msg_padded);
     evil_auth_msg.extend_from_slice(&EVIL_SUFFIX);
 

@@ -56,7 +56,7 @@ impl MTRNG {
             x[i] = F.wrapping_mul(x[i-1] ^ (x[i-1] >> (W - 2))).wrapping_add(i as u32);
         }
 
-        MTRNG { x: x }
+        MTRNG { x }
     }
 
     pub fn with_x(x: &[u32; N]) -> MTRNG {

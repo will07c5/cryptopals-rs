@@ -102,12 +102,12 @@ pub fn score_ascii_bytes(data: &[u8]) -> usize{
 pub fn crack_1b_xor(ciphertext: &[u8]) -> Option<Crack1BResult> {
 	let mut scores = Vec::new();
 
-	for i in 0..=255 {
-		let test_plain_bytes = ops::xor_1b(ciphertext, i);
+	for key in 0..=255 {
+		let plaintext = ops::xor_1b(ciphertext, key);
 
-		let score = score_ascii_bytes(&test_plain_bytes);
+		let score = score_ascii_bytes(&plaintext);
 
-		scores.push(Crack1BResult { plaintext: test_plain_bytes, score: score, key: i })
+		scores.push(Crack1BResult { plaintext, score, key })
 	}
 
 	scores.sort_by_key(|k| { k.score });
