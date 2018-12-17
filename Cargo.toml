@@ -13,7 +13,5 @@ percent-encoding = "1.0.1"
 byteorder = "1.2.7"
 rocket = "0.4.0"
 reqwest = "0.9.5"
-
-[dependencies.num-bigint]
-version = "0.2"
-features = ["rand"]
+ramp = "0.5"
+lazy_static = "1.2.0"
