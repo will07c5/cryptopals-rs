@@ -5,7 +5,7 @@ authors = ["Will Hahne <will07c5@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-rand = "0.3"
+rand = "0.5"
 base64 = "~0.5.0"
 hex = "0.3.2"
 rust-crypto = "^0.2"
@@ -13,3 +13,7 @@ percent-encoding = "1.0.1"
 byteorder = "1.2.7"
 rocket = "0.4.0"
 reqwest = "0.9.5"
+
+[dependencies.num-bigint]
+version = "0.2"
+features = ["rand"]
