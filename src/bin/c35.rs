@@ -40,7 +40,7 @@ fn node_a(tx: Sender<Msg>, rx: Receiver<Msg>) {
     loop {
         match rx.recv().unwrap() {
             Msg::Ack => {
-                tx.send(Msg::InitA { a_pub: pub_key.clone() });
+                tx.send(Msg::InitA { a_pub: pub_key.clone() }).unwrap();
             }
             Msg::InitB { b_pub } => {
                 let s = gen_session_key(&b_pub, &priv_key, &P);
@@ -115,7 +115,7 @@ fn mitm(tx_a: Sender<Msg>, tx_b: Sender<Msg>, rx_a: Receiver<Msg>, rx_b: Receive
                 tx_b.send(Msg::InitParams { p, g: evil_g.clone() }).unwrap();
             },
             Msg::InitA { a_pub } => {
-                tx_b.send(Msg::InitA { a_pub });
+                tx_b.send(Msg::InitA { a_pub }).unwrap();
             }
             Msg::Echo { iv, msg } => {
                 // g = 1 => B = 1
