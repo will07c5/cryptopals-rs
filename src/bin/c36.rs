@@ -2,14 +2,16 @@ extern crate common;
 extern crate rand;
 extern crate ramp;
 extern crate hex;
+extern crate crypto;
 
 use ramp::Int;
 use std::thread;
 use std::sync::mpsc;
 use std::sync::mpsc::{Sender, Receiver};
 use common::dh::{gen_dh_pair, P, G};
-use common::sha1::sha1_digest;
 use common::util::random_bytes;
+use common::crypto_helper::{hmac_sha256, sha256};
+
 
 enum Msg {
     EmailPubKey {
@@ -35,7 +37,7 @@ fn combine_pub_keys(a_pub: &Int, b_pub: &Int) -> Int {
     let mut sha_input = Vec::new();
     sha_input.extend_from_slice(&a_pub.to_str_radix(16, false).as_bytes()); 
     sha_input.extend_from_slice(&b_pub.to_str_radix(16, false).as_bytes()); 
-    let u_h = sha1_digest(&sha_input);
+    let u_h = sha256(&sha_input);
     
     Int::from_str_radix(&hex::encode(&u_h), 16).unwrap()
 }
@@ -44,7 +46,7 @@ fn combine_salt_pw(salt: &[u8], pw: &[u8]) -> Int {
     let mut sha_input = Vec::new();
     sha_input.extend_from_slice(&salt);
     sha_input.extend_from_slice(&pw);
-    let x_h = sha1_digest(&sha_input);
+    let x_h = sha256(&sha_input);
     // there's probably a less stupid way to do this but this works for now
     Int::from_str_radix(&hex::encode(&x_h), 16).unwrap()
 }
@@ -64,9 +66,10 @@ fn client_node(tx: Sender<Msg>, rx: Receiver<Msg>) {
                 let k = Int::from(K);
 
                 let check_val = (b_pub - k * G.pow_mod(&x, &P)).pow_mod(&(&priv_key + u * x), &P); 
-                let check_digest = sha1_digest(&check_val.to_str_radix(16, false).as_bytes());
+                let hmac_key = sha256(&check_val.to_str_radix(16, false).as_bytes());
+                let check_hmac = hmac_sha256(&hmac_key, &salt);
 
-                tx.send(Msg::Check { client_check: check_digest }).unwrap();
+                tx.send(Msg::Check { client_check: check_hmac }).unwrap();
             },
             Msg::PWAccepted => {
                 println!("Password accepted!");
@@ -89,7 +92,7 @@ fn server_node(tx: Sender<Msg>, rx: Receiver<Msg>) {
     let (mut pub_key, priv_key) = gen_dh_pair(&P, &G);
     pub_key += Int::from(K) * &v;
 
-    let mut check_digest = None;
+    let mut check_hmac = None;
     loop {
         let msg = rx.recv().unwrap();
 
@@ -103,12 +106,13 @@ fn server_node(tx: Sender<Msg>, rx: Receiver<Msg>) {
                 let u = combine_pub_keys(&a_pub, &pub_key);
 
                 let check_val = (a_pub * v.pow_mod(&u, &P)).pow_mod(&priv_key, &P);
-                check_digest = Some(sha1_digest(&check_val.to_str_radix(16, false).as_bytes()));
+                let hmac_key = sha256(&check_val.to_str_radix(16, false).as_bytes());
+                check_hmac = Some(hmac_sha256(&hmac_key, &salt));
 
                 tx.send(Msg::SaltPubKey { salt: salt.clone(), b_pub: pub_key.clone() }).unwrap();
             },
             Msg::Check { client_check } => {
-                if client_check == check_digest.unwrap() {
+                if client_check == check_hmac.unwrap() {
                     tx.send(Msg::PWAccepted).unwrap();
                 } else {
                     tx.send(Msg::BadEmailOrPW).unwrap();

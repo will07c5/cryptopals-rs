@@ -6,6 +6,10 @@ use crypto::blockmodes::NoPadding;
 use crypto::buffer::{RefReadBuffer, RefWriteBuffer, ReadBuffer, WriteBuffer};
 use crypto::aessafe::AesSafe128Encryptor;
 use crypto::symmetriccipher::BlockEncryptor;
+use crypto::hmac::Hmac;
+use crypto::sha2::Sha256;
+use crypto::digest::Digest;
+use crypto::mac::Mac;
 use byteorder::{LittleEndian, WriteBytesExt};
 
 pub const BLOCK_SIZE: usize = 16;
@@ -89,4 +93,22 @@ pub fn crypt_ctr(key: &[u8], nonce: u64, input: &[u8]) -> Vec<u8> {
     }
 
     output
+}
+
+pub fn hmac_sha256(key: &[u8], data: &[u8]) -> Vec<u8> {
+    let mut hmac = Hmac::new(Sha256::new(), key);
+    hmac.input(data);
+    let mut output_buf = vec![0u8; hmac.output_bytes()];
+    hmac.raw_result(&mut output_buf);
+
+    output_buf
+}
+
+pub fn sha256(data: &[u8]) -> Vec<u8> {
+    let mut hasher = Sha256::new();
+    hasher.input(data);
+    let mut output_buf = vec![0u8; hasher.output_bytes()];
+    hasher.result(&mut output_buf);
+
+    output_buf
 }
