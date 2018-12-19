@@ -2,6 +2,7 @@
 
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use std::io::Cursor;
+use crate::ops::xor;
 
 // Note 1: All variables are unsigned 32-bit quantities and wrap modulo 232 when calculating, except for
 //         ml, the message length, which is a 64-bit quantity, and
@@ -135,6 +136,33 @@ pub fn sha1_digest(data: &[u8]) -> Vec<u8> {
 	}
 
 	hh
+}
+
+pub fn sha1_hmac(key: &[u8], data: &[u8]) -> Vec<u8> {
+	// if key is too long, shorten it by hashing
+	let mut key_pad =
+		if key.len() > CHUNK_SIZE {
+			sha1_digest(&key)
+		} else {
+			key.to_vec()
+		};
+
+	// pad key to block size
+	while key_pad.len() < CHUNK_SIZE {
+		key_pad.push(0);
+	}
+
+	let mut o_key_pad = xor(&key, &[0x5c; CHUNK_SIZE]);
+	let mut i_key_pad = xor(&key, &[0x36; CHUNK_SIZE]);
+
+	// hash inner
+	i_key_pad.extend_from_slice(&data);
+	let i_hash = sha1_digest(&i_key_pad);
+
+	// hash outer
+	o_key_pad.extend_from_slice(&i_hash);
+
+	sha1_digest(&o_key_pad)
 }
 
 #[cfg(test)]

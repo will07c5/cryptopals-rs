@@ -4,11 +4,18 @@ extern crate common;
 #[macro_use]
 extern crate rocket;
 extern crate hex;
+#[macro_use]
+extern crate lazy_static;
 
 use rocket::http::Status;
 use std::fs;
 use std::{thread, time};
-use common::sha1::{sha1_digest, HASH_SIZE};
+use common::sha1::{sha1_hmac, HASH_SIZE};
+use common::util::random_bytes;
+
+lazy_static! {
+    static ref HMAC_KEY: Vec<u8> = random_bytes(HASH_SIZE);
+}
 
 fn insecure_compare(a: &[u8], b: &[u8]) -> bool {
     for (ab, bb) in a.iter().zip(b.iter()) {
@@ -45,7 +52,7 @@ fn test_handler(file: String, signature: String) -> Status {
         return Status::BadRequest;
     }
 
-    let sig_check = sha1_digest(&data);
+    let sig_check = sha1_hmac(&HMAC_KEY, &data);
 
     if !insecure_compare(&sig_check, &sig_decode) {
         println!("{} {}", hex::encode(&sig_check), hex::encode(&sig_decode));
