@@ -28,8 +28,8 @@ mod tests {
         let pair_a = super::gen_dh_pair(&super::P, &super::G);
         let pair_b = super::gen_dh_pair(&super::P, &super::G);
 
-        let s_a = super::gen_session_key(&pair_a.1, &pair_b.0, &super::P);
-        let s_b = super::gen_session_key(&pair_b.1, &pair_a.0, &super::P);
+        let s_a = super::gen_session_key(&pair_b.0, &pair_a.1, &super::P);
+        let s_b = super::gen_session_key(&pair_a.0, &pair_b.1, &super::P);
 
         assert_eq!(s_a, s_b);
     }
