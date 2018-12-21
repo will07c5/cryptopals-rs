@@ -7,13 +7,13 @@ fn test_prime(n: &Int, k: usize) -> bool {
     assert!(n > &Int::from(3));
     assert!(k > 0);
 
-    println!("n = {}", n);
+    // println!("n = {}", n);
 
     let r = (n - Int::from(1)).trailing_zeros();
     let d = (n - Int::from(1)) / Int::from(1 << r);
 
-    println!("r = {}", r);
-    println!("d = {}", d);
+    // println!("r = {}", r);
+    // println!("d = {}", d);
 
     let mut rng = rand::thread_rng();
     'witness_loop: for _ in 0..k {
@@ -52,6 +52,7 @@ pub fn gen_prime(bit_size: usize) -> Int {
         test_num -= 1;
     }
 
+    println!("generating prime");
     loop {
         // Check if current value is prime
         if test_prime(&test_num, 100) {
@@ -61,6 +62,7 @@ pub fn gen_prime(bit_size: usize) -> Int {
         // Subtract 2 since even numbers cannot be prime 
         test_num -= 2;
     }
+    println!("done");
 }
 
 #[cfg(test)]
