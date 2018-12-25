@@ -2,19 +2,16 @@ use ramp::int::Int;
 use crate::prime::gen_prime;
 use crate::ops::inv_mod;
 
+#[derive(Debug)]
 pub struct RSAPubKey {
-	e: Int,
-	n: Int,
+	pub e: Int,
+	pub n: Int,
 }
 
+#[derive(Debug)]
 pub struct RSAPrivKey {
 	d: Int,
 	n: Int,
-}
-
-pub struct RSAKeyPair {
-	pub pub_key: RSAPubKey,
-	pub priv_key: RSAPrivKey,
 }
 
 // Generate a prime (p) where gcd(p - 1, e) is 1.
@@ -32,28 +29,19 @@ fn gen_good_prime(e: &Int, bits: usize) -> Int {
     }
 }
 
-pub fn gen_rsa_pair() -> RSAKeyPair {
+pub fn gen_rsa_pair() -> (RSAPubKey, RSAPrivKey) {
     let e = Int::from(3);
 
-    let p = gen_good_prime(&e, 512);
-    let q = gen_good_prime(&e, 512);
+    let p = gen_good_prime(&e, 256);
+    let q = gen_good_prime(&e, 256);
 
     let n = &p * &q;
-    println!("p = {}, q = {}, n = {}", p, q, n);
 
     let et = (p - 1) * (q - 1); 
-    println!("e = {}, et = {}", e, et);
 
     let d = inv_mod(&e, &et).unwrap();
-    println!("d = {}", d);
 
-    println!("pub_key = ({}, {})", e, n);
-    println!("priv_key = ({}, {})", d, n);
-
-    RSAKeyPair {
-    	pub_key: RSAPubKey { e, n: n.clone() },
-    	priv_key: RSAPrivKey { d, n },
-    }
+    (RSAPubKey { e, n: n.clone() }, RSAPrivKey { d, n })
 }
 
 pub fn encrypt_rsa(key: &RSAPubKey, m: &Int) -> Result<Int, ()> {

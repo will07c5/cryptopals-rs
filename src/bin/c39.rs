@@ -33,7 +33,7 @@ fn main() {
     }
 
     {
-        let key_pair = gen_rsa_pair();
+        let (pub_key, priv_key) = gen_rsa_pair();
 
         // convert string to big int
         let data = b"encrypt test string";
@@ -41,9 +41,9 @@ fn main() {
         let m = Int::from_str_radix(&hex_data, 16).unwrap();
 
         println!("m = {}", m);
-        let c = encrypt_rsa(&key_pair.pub_key, &m).unwrap();
+        let c = encrypt_rsa(&pub_key, &m).unwrap();
         println!("c = {}", c);
-        let mp = decrypt_rsa(&key_pair.priv_key, &c).unwrap();
+        let mp = decrypt_rsa(&priv_key, &c).unwrap();
         println!("m' = {}", mp);
 
         println!("m' as string = {}", String::from_utf8_lossy(&hex::decode(mp.to_str_radix(16, false)).unwrap()));

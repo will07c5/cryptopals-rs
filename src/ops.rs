@@ -63,6 +63,17 @@ pub fn inv_mod(a: &Int, n: &Int) -> Option<Int> {
 	}
 }
 
+pub fn nth_root(a: &Int, n: usize) -> Int {
+	let mut x = a / &Int::from(2);
+	let mut x_prev = Int::from(0);
+	while x != x_prev {
+		x_prev = x.clone();
+		x = (&x*(n - 1) + a / (x.pow(n - 1))) / &Int::from(n);
+	}
+
+	x
+}
+
 #[cfg(test)]
 mod tests {
     #[test]
