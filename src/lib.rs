@@ -15,6 +15,7 @@ pub mod sha1;
 pub mod md4;
 pub mod dh;
 pub mod prime;
+pub mod asn1;
 pub mod rsa;
 
 #[macro_export]
