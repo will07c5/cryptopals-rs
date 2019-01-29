@@ -2,7 +2,7 @@ use ramp::int::{Int, RandomInt};
 use rand;
 
 // based on https://en.wikipedia.org/wiki/Miller–Rabin_primality_test
-fn test_prime(n: &Int, k: usize) -> bool {
+pub fn test_prime(n: &Int, k: usize) -> bool {
     assert!((n % Int::from(2)) != 0);
     assert!(n > &Int::from(3));
     assert!(k > 0);
@@ -43,14 +43,11 @@ fn test_prime(n: &Int, k: usize) -> bool {
     return true;
 }
 
-pub fn gen_prime(bit_size: usize) -> Int {
-    // Pick a random value to test
-    let mut test_num = rand::thread_rng().gen_uint(bit_size); 
+pub fn gen_prime_with_seed(seed: &Int) -> Int {
+    let mut test_num = seed.clone();
 
-    // Want to start on an odd number
-    if &test_num % Int::from(2) == 0 {
-        test_num -= 1;
-    }
+    // Ensure the number is odd
+    test_num.set_bit(0, true);
 
     loop {
         // Check if current value is prime
@@ -60,6 +57,26 @@ pub fn gen_prime(bit_size: usize) -> Int {
 
         // Subtract 2 since even numbers cannot be prime 
         test_num -= 2;
+    }
+}
+
+pub fn gen_prime(bit_len: usize) -> Int {
+    'outer: loop {
+        // Pick a random value to test
+        let mut seed = rand::thread_rng().gen_uint(bit_len); 
+
+        // high bit should be one so that the bit length is correct
+        seed.set_bit(bit_len as u32 - 1, true);
+
+        assert_eq!(seed.bit_length(), bit_len as u32);
+
+        let prime = gen_prime_with_seed(&seed);
+
+        if prime.bit_length() < bit_len as u32 {
+            continue 'outer;
+        } else {
+            return prime;
+        }
     }
 }
 

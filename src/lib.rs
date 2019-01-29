@@ -17,6 +17,7 @@ pub mod dh;
 pub mod prime;
 pub mod asn1;
 pub mod rsa;
+pub mod dsa;
 
 #[macro_export]
 macro_rules! challenge_data {
