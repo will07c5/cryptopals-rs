@@ -180,6 +180,16 @@ pub fn decode_asn1_oid(data: &[u8]) -> Result<(&[u8], Vec<usize>), ASN1Error> {
 
 }
 
+pub fn decode_asn1_integer(data: &[u8]) -> Result<(&[u8], Int), ASN1Error> {
+    let (next, len) = decode_asn1_verify_type_get_len(0x02, data)?;
+
+    if next.len() < len {
+        Err(ASN1Error::NotEnoughBytes)
+    } else {
+        Ok((&next[len..], Int::from_bytes(&next[..len])))
+    }
+}
+
 pub fn decode_asn1_sequence(data: &[u8]) -> Result<(&[u8], &[u8]), ASN1Error> {
     let (next, len) = decode_asn1_verify_type_get_len(0x30, data)?;
 
