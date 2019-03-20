@@ -1,3 +1,5 @@
+// https://csrc.nist.gov/CSRC/media/Publications/fips/186/1/archive/1998-12-15/documents/fips186-1.pdf
+
 use crate::sha1::{sha1_digest, HASH_SIZE};
 use crate::ops::xor;
 use crate::prime::test_prime;
@@ -18,28 +20,28 @@ const SEED_BIT_LEN: usize = HASH_SIZE*8;
 const CACHED_PRIMES_FILE: &str = ".cached_primes";
 
 #[derive(Debug, Clone)]
-struct DSACommonParams {
-    p: Int,
-    q: Int,
-    g: Int,
+pub struct DSACommonParams {
+    pub p: Int,
+    pub q: Int,
+    pub g: Int,
 }
 
 #[derive(Debug, Clone)]
 pub struct DSAPubKey {
-    common: DSACommonParams,
-    y: Int,
+    pub common: DSACommonParams,
+    pub y: Int,
 }
 
 #[derive(Debug, Clone)]
 pub struct DSAPrivKey {
-    common: DSACommonParams,
-    x: Int,
+    pub common: DSACommonParams,
+    pub x: Int,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct DSASignature {
-    r: Int,
-    s: Int,
+    pub r: Int,
+    pub s: Int,
 }
 
 fn gen_params_with_seed(len: usize, seed: &Int) -> Option<(Int, Int, usize)> {
@@ -197,38 +199,44 @@ fn gen_param_g(p: &Int, q: &Int) -> Int {
     }
 }
 
-pub fn gen_dsa_pair() -> (DSAPubKey, DSAPrivKey) {
+pub fn gen_dsa_pair_with_x(x: &Int) -> (DSAPubKey, DSAPrivKey) {
     let (p, q) = get_cached_primes();
 
     let g = gen_param_g(&p, &q);
-
-    let x = rand::thread_rng().gen_uint_below(&q);
 
     let y = g.pow_mod(&x, &p);
 
     let common = DSACommonParams { p, q, g };
 
-    (DSAPubKey { common: common.clone(), y }, DSAPrivKey { common, x })
+    (DSAPubKey { common: common.clone(), y }, DSAPrivKey { common, x: x.clone() })
 }
 
-fn sign_dsa_internal(key: &DSAPrivKey, msg: &[u8], k: &Int) -> DSASignature {
+pub fn gen_dsa_pair() -> (DSAPubKey, DSAPrivKey) {
+    let (_, q) = get_cached_primes();
+
+    let x = rand::thread_rng().gen_uint_below(&q);
+
+    gen_dsa_pair_with_x(&x)
+}
+
+pub fn sign_dsa_internal(key: &DSAPrivKey, msg: &[u8], k: &Int) -> DSASignature {
     let (p, q) = (&key.common.p, &key.common.q);
     let g = &key.common.g;
     let x = &key.x;
 
-    println!("DSA sign");
-    println!("p: {} q: {}", p, q);
-    println!("g: {}", g);
-    println!("x: {}", x);
-    println!("k: {}", k);
+    // println!("DSA sign");
+    // println!("p: {} q: {}", p, q);
+    // println!("g: {}", g);
+    // println!("x: {}", x);
+    // println!("k: {}", k);
 
     let r = &g.pow_mod(k, p) % q;
-    println!("r: {}", r);
+    // println!("r: {}", r);
 
     let msg_digest = &Int::from_bytes(&sha1_digest(&msg));
 
     let s = &(k.inv_mod(q).unwrap() * (msg_digest + x * &r)) % q;
-    println!("s: {}", s);
+    // println!("s: {}", s);
 
     DSASignature { r, s }
 
