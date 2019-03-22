@@ -19,7 +19,7 @@ use common::dsa::{verify_dsa, DSAPubKey, DSACommonParams, DSASignature};
 
 const DATA: &str = challenge_data!("44.txt");
 
-// because the modulus symbol means remainder for reasons
+// because the modulus operation returns negative numbers because reasons
 fn real_modulus(a: &Int, b: &Int) -> Int {
     let result = a % b;
 

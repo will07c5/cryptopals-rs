@@ -149,7 +149,7 @@ fn gen_dsa_primes(len: usize) -> (Int, Int) {
     }
 }
 
-fn get_cached_primes() -> (Int, Int) {
+pub fn get_cached_primes() -> (Int, Int) {
     if Path::new(CACHED_PRIMES_FILE).exists() {
         let mut data = Vec::new();
         File::open(CACHED_PRIMES_FILE).unwrap().read_to_end(&mut data).unwrap();
@@ -199,24 +199,23 @@ fn gen_param_g(p: &Int, q: &Int) -> Int {
     }
 }
 
-pub fn gen_dsa_pair_with_x(x: &Int) -> (DSAPubKey, DSAPrivKey) {
-    let (p, q) = get_cached_primes();
+pub fn gen_dsa_pair_with(p: &Int, q: &Int, g: &Int) -> (DSAPubKey, DSAPrivKey) {
 
-    let g = gen_param_g(&p, &q);
+    let x = rand::thread_rng().gen_uint_below(q);
 
-    let y = g.pow_mod(&x, &p);
+    let y = g.pow_mod(&x, p);
 
-    let common = DSACommonParams { p, q, g };
+    let common = DSACommonParams { p: p.clone(), q: q.clone(), g: g.clone() };
 
     (DSAPubKey { common: common.clone(), y }, DSAPrivKey { common, x: x.clone() })
 }
 
 pub fn gen_dsa_pair() -> (DSAPubKey, DSAPrivKey) {
-    let (_, q) = get_cached_primes();
+    let (p, q) = get_cached_primes();
 
-    let x = rand::thread_rng().gen_uint_below(&q);
+    let g = gen_param_g(&p, &q);
 
-    gen_dsa_pair_with_x(&x)
+    gen_dsa_pair_with(&p, &q, &g)
 }
 
 pub fn sign_dsa_internal(key: &DSAPrivKey, msg: &[u8], k: &Int) -> DSASignature {
@@ -255,27 +254,27 @@ pub fn verify_dsa(key: &DSAPubKey, msg: &[u8], sig: &DSASignature) -> bool {
     let g = &key.common.g;
     let y = &key.y;
 
-    println!("DSA verify");
-    println!("r: {} s: {}", r, s);
-    println!("p: {} q: {}", p, q);
-    println!("g: {}", g);
-    println!("y: {}", y);
+    // println!("DSA verify");
+    // println!("r: {} s: {}", r, s);
+    // println!("p: {} q: {}", p, q);
+    // println!("g: {}", g);
+    // println!("y: {}", y);
     
     assert!(r < q);
     assert!(s < q);
 
     let w = &s.inv_mod(q).unwrap();
-    println!("w: {}", w);
+    // println!("w: {}", w);
     let u1 = (&Int::from_bytes(&sha1_digest(msg)) * w) % q;
-    println!("u1: {}", u1);
+    // println!("u1: {}", u1);
     let u2 = (r * w) % q;
-    println!("u2: {}", u2);
+    // println!("u2: {}", u2);
     let a = g.pow_mod(&u1, p);
-    println!("a: {}", a);
+    // println!("a: {}", a);
     let b = y.pow_mod(&u2, p);
-    println!("b: {}", b);
+    // println!("b: {}", b);
     let v = ((a * b) % p) % q;
-    println!("v: {}", v);
+    // println!("v: {}", v);
 
     &v == r
 }
